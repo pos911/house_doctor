@@ -1,0 +1,56 @@
+[
+  {
+    "region": "용강동",
+    "code8": "11440105",
+    "rter_aptName": "e편한세상마포리버파크",
+    "bank_aptName": "e편한세상마포리버파크",
+    "naverAptNo": 105738,
+    "totalHouseCount": 547,
+    "bank_id": "137926357"
+  },
+  {
+    "region": "용강동",
+    "code8": "11440105",
+    "rter_aptName": "래미안",
+    "bank_aptName": "래미안",
+    "naverAptNo": 2995,
+    "totalHouseCount": 430,
+    "bank_id": "137901213"
+  },
+  {
+    "region": "용강동",
+    "code8": "11440105",
+    "rter_aptName": "래미안마포리버웰",
+    "bank_aptName": "래미안마포리버웰",
+    "naverAptNo": 104596,
+    "totalHouseCount": 563,
+    "bank_id": "137898943"
+  },
+  {
+    "region": "용강동",
+    "code8": "11440105",
+    "rter_aptName": "마포대림1차",
+    "bank_aptName": "마포대림1차",
+    "naverAptNo": 3390,
+    "totalHouseCount": 123,
+    "bank_id": "137917985"
+  },
+  {
+    "region": "용강동",
+    "code8": "11440105",
+    "rter_aptName": "마포대림e-편한세상2차",
+    "bank_aptName": "마포대림e-편한세상2차",
+    "naverAptNo": 10373,
+    "totalHouseCount": 141,
+    "bank_id": "137898948"
+  },
+  {
+    "region": "토정동",
+    "code8": "11440106",
+    "rter_aptName": "한강삼성",
+    "bank_aptName": "한강삼성",
+    "naverAptNo": 421,
+    "totalHouseCount": 456,
+    "bank_id": "137914389"
+  }
+]

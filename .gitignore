@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+debug_*.json
+*_통합매물.*
+bank_raw.html
+.vscode/
+.idea/
