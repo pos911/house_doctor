@@ -34,23 +34,16 @@ def process_rter_item(item):
 def scrape_rter_listings(session, naver_apt_no):
     url = "https://rter2.com/hompyArticle/list"
     
+    # User instructions: 100% exact payload structure
     payload = {
         "pageNo": 1,
-        "pageSize": 50,
+        "pageSize": 100,
         "searchMore": {
             "method": "30051A1",
             "type": "30000C01",
             "naverAptNo": str(naver_apt_no),
             "order": "show_start_date,desc"
-        },
-        "temporary": {"aptNo": str(naver_apt_no)}, 
-        "northLatitude": "37.5446",
-        "eastLongitude": "126.9525",
-        "southLatitude": "37.5348",
-        "westLongitude": "126.9294",
-        "centerLatitude": "37.5397",
-        "centerLongitude": "126.9410",
-        "zoomLevel": 17
+        }
     }
     
     headers = session.headers.copy()
@@ -69,6 +62,10 @@ def scrape_rter_listings(session, naver_apt_no):
         if resp.status_code == 200:
             print(f"[알터 호출 후] Raw Data (First 100 chars): {resp.text[:100]}...")
             data = resp.json()
+            if data.get("status", {}).get("code") != 0:
+                print(f"[알터 에러 코드] {data.get('status', {}).get('code')}: {data.get('status', {}).get('message')}")
+                return []
+            
             items = data.get("result", {}).get("list", [])
             for item in items:
                 listings.append(process_rter_item(item))
@@ -135,15 +132,19 @@ def scrape_bank_listings(session, bank_id="A0001062", region_cd="1144010600"):
     try:
         resp = session.get(url)
         html = resp.content.decode('euc-kr', errors='replace')
-        print(f"[뱅크 호출 후] Raw Data (First 100 chars): {html[:100]}...")
+        print(f"[뱅크 호출 후] Raw Data (First 300 chars): {html[:300]}...")
         
         soup = BeautifulSoup(html, 'html.parser')
         trs = soup.find_all('tr')
+        print(f"[DEBUG] Found {len(trs)} <tr> elements.")
+        if len(trs) < 10:
+             print(f"[DEBUG] Bank HTML snippet: {html[500:1500]}")
         
         i = 0
         while i < len(trs):
             tr1 = trs[i]
             tds1 = tr1.find_all('td')
+            # print(f"[DEBUG] Row {i}: {len(tds1)} tds") # Internal debug
             
             if len(tds1) == 10:
                 item = process_bank_row(tds1)
