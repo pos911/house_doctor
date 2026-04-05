@@ -6,7 +6,7 @@ from phase3_dedup import deduplicate_and_merge
 
 def run_pipeline(target_name="한강삼성"):
     print(f"\n=== Starting Direct API Pipeline for {target_name} ===")
-    rter_data, bank_data = run_phase2()
+    rter_data, bank_data = run_phase2(target_name)
     print(f"Scraped {len(rter_data)} items from Rter, {len(bank_data)} items from Bank.")
     
     if not rter_data and not bank_data:
