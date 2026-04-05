@@ -1,30 +1,31 @@
 import json
 import pandas as pd
+import re
 from config import get_session
 from utils import parse_price, clean_text
 from bs4 import BeautifulSoup
 
 def process_rter_item(item):
-    # Altor API 실시간 필드명 (상태 코드 0 확인됨)
     try:
         space2 = round(float(item.get("space2", 0)))
     except:
         space2 = 0
         
     price1 = parse_price(str(item.get("price1", "0")))
-    # atclFetrDesc가 특징 필드임
     feature = clean_text(item.get("atclFetrDesc", "")) or clean_text(item.get("feature", ""))
     
-    # confirmed keys: dong, floor, floorTotal
-    dong = clean_text(str(item.get("dong", "")))
+    dong = "".join(filter(str.isdigit, clean_text(str(item.get("dong", "")))))
     floor = clean_text(str(item.get("floor", "")))
     total_floor = clean_text(str(item.get("floorTotal", "")))
+    
+    floor_raw = f"{floor}/{total_floor}" if total_floor else floor
     
     return {
         "platform": "알터",
         "dong": dong,
         "floor": floor,
         "total_floor": total_floor,
+        "floor_raw": floor_raw,
         "space": space2,
         "price": price1,
         "feature": feature
@@ -54,6 +55,7 @@ def scrape_rter_listings(session, naver_apt_no):
     
     headers = session.headers.copy()
     headers.update({
+        "Content-Type": "application/json",
         "X-Ajax-Call": "true",
         "X-Requested-With": "XMLHttpRequest"
     })
@@ -63,7 +65,6 @@ def scrape_rter_listings(session, naver_apt_no):
     
     listings = []
     try:
-        # Use json=payload to send as application/json
         resp = session.post(url, json=payload, headers=headers)
         if resp.status_code == 200:
             print(f"[알터 호출 후] Raw Data (First 100 chars): {resp.text[:100]}...")
@@ -76,38 +77,34 @@ def scrape_rter_listings(session, naver_apt_no):
     return listings
 
 def process_bank_row(tds):
-    # Strict index mapping based on instructions:
-    # ids[5]: space_f, ids[6]: dong, ids[7]: floor_raw, ids[8]: price
-    if len(tds) < 9:
+    if len(tds) != 10:
         return None
         
     area_text = clean_text(tds[5].get_text())
-    # Extract only decimal if '전용' is present
-    if "전용" in area_text:
-        try:
-            space_f = float("".join(filter(lambda x: x.isdigit() or x == '.', area_text)))
-        except:
-            space_f = 0.0
+    match = re.search(r"전용\s*([\d.]+)", area_text)
+    if match:
+        space_f = float(match.group(1))
     else:
-        # If '전용' is not clearly labelled, try to extract anyway but keep in mind user instruction
         space_f = 0.0
         
-    # dong (동): tds[6] -> "101" 등 숫자만 추출.
     dong_raw = clean_text(tds[6].get_text())
     dong = "".join(filter(str.isdigit, dong_raw))
     
-    # floor_raw (층): tds[7] -> "3/28" 등 전체를 가져올 것.
     floor_raw = clean_text(tds[7].get_text())
     
-    # price (매매가): tds[8] -> "185,000"에서 숫자만 정수로 변환.
     price_str = clean_text(tds[8].get_text())
     
-    # Skip if price contains phone number (02-) or is clearly invalid
-    if "매물이 없습니다" in dong_raw or "-" in price_str or price_str.startswith("02"):
+    # 방어 로직: 02-로 시작하거나 숫자가 6자리 미만이면 패스
+    if price_str.startswith("02-"):
         return None
         
-    price = parse_price(price_str)
-    if price == 0:
+    digits_only = "".join(filter(str.isdigit, price_str))
+    if len(digits_only) < 6:
+        return None
+        
+    try:
+        price = int(digits_only)
+    except:
         return None
         
     floor = ""
@@ -115,15 +112,17 @@ def process_bank_row(tds):
     if "/" in floor_raw:
         parts = floor_raw.split("/")
         floor = parts[0].strip()
-        total_floor = parts[1].strip()
+        if len(parts) > 1:
+            total_floor = parts[1].strip()
     else:
         floor = floor_raw
-        
+
     return {
         "platform": "뱅크",
         "dong": dong,
         "floor": floor,
         "total_floor": total_floor,
+        "floor_raw": floor_raw,
         "space": space_f,
         "price": price,
         "feature": ""
@@ -140,11 +139,31 @@ def scrape_bank_listings(session, bank_id="A0001062", region_cd="1144010600"):
         
         soup = BeautifulSoup(html, 'html.parser')
         trs = soup.find_all('tr')
-        for tr in trs:
-            tds = tr.find_all('td')
-            item = process_bank_row(tds)
-            if item:
-                listings.append(item)
+        
+        i = 0
+        while i < len(trs):
+            tr1 = trs[i]
+            tds1 = tr1.find_all('td')
+            
+            if len(tds1) == 10:
+                item = process_bank_row(tds1)
+                
+                # Check for the next row for feature
+                if i + 1 < len(trs):
+                    tr2 = trs[i+1]
+                    tds2 = tr2.find_all('td')
+                    if tds2:
+                        feature_text = clean_text(tds2[0].get_text())
+                        if item:
+                            item["feature"] = feature_text
+                            
+                if item:
+                    listings.append(item)
+                    
+                i += 2
+            else:
+                i += 1
+                
     except Exception as e:
         print(f"Bank Scrape Error: {e}")
     return listings
@@ -152,7 +171,6 @@ def scrape_bank_listings(session, bank_id="A0001062", region_cd="1144010600"):
 def run_phase2(target_name):
     session = get_session()
     
-    # Load Danji_Master.json for mapping
     try:
         with open("Danji_Master.json", "r", encoding="utf-8") as f:
             master_data = json.load(f)
@@ -162,7 +180,7 @@ def run_phase2(target_name):
         
     target_entry = None
     for entry in master_data:
-        if entry.get("bank_aptName") == target_name or entry.get("rter_aptName") == target_name:
+        if entry.get("bank_aptName") == target_name or entry.get("rter_aptName") == target_name or entry.get("target_name") == target_name:
             target_entry = entry
             break
             
@@ -172,7 +190,8 @@ def run_phase2(target_name):
         
     naver_apt_no = str(target_entry.get("naverAptNo", ""))
     bank_id = str(target_entry.get("bank_id", ""))
-    region_cd = str(target_entry.get("code8", "")) + "00"
+    # code8 falls back to default if unavailable
+    region_cd = str(target_entry.get("code8", "11440106")) + "00"
     
     print(f"[{target_name}] Direct API Scraping (Naver ID: {naver_apt_no}, Bank ID: {bank_id}, Region: {region_cd})...")
     

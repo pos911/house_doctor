@@ -26,13 +26,16 @@ def run_pipeline(target_name="한강삼성"):
         else:
             dong_label = str(dong_val)
             
-        floor_val = r.get('floor', '')
-        total_f = r.get('total_floor', '')
-        
-        if floor_val and total_f:
-            dong_floor = f"{dong_label} {floor_val}/{total_f}"
-        else:
-            dong_floor = f"{dong_label} {floor_val}"
+        floor_raw = r.get('floor_raw', '')
+        if not floor_raw:
+            floor_val = r.get('floor', '')
+            total_f = r.get('total_floor', '')
+            if floor_val and total_f:
+                floor_raw = f"{floor_val}/{total_f}"
+            else:
+                floor_raw = floor_val
+
+        dong_floor = f"{dong_label} {floor_raw}".strip()
             
         rows.append({
             "상태": "매매",
