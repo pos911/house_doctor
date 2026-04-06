@@ -33,9 +33,14 @@ def deduplicate_and_merge(rter_data, bank_data):
         b["_platform"] = "뱅크"
         all_recs.append(b)
         
-    for r in all_recs:
+    for i, r in enumerate(all_recs):
         r["_cat"] = get_floor_category(r["floor"], r["total_floor"])
-        r["_dong"] = r["dong"]
+        # If dong is missing, assign a unique ID for grouping to prevent any merging
+        if r.get("dong"):
+            r["_dong"] = r["dong"]
+        else:
+            r["_dong"] = f"__UNIQUE_{i}__"
+            
         r["_space"] = r["space"]
         r["_price"] = r["price"]
         r["tags"] = {r["_platform"]}

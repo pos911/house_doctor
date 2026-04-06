@@ -52,5 +52,68 @@
     "naverAptNo": 421,
     "totalHouseCount": 456,
     "bank_id": "137914389"
+  },
+  {
+    "region": "현석동",
+    "code8": "11440111",
+    "rter_aptName": "경남아너스빌",
+    "bank_aptName": "경남아너스빌",
+    "naverAptNo": 22715,
+    "totalHouseCount": 90,
+    "bank_id": "137961576"
+  },
+  {
+    "region": "현석동",
+    "code8": "11440111",
+    "rter_aptName": "대원칸타빌",
+    "bank_aptName": "대원칸타빌",
+    "naverAptNo": 5621,
+    "totalHouseCount": 279,
+    "bank_id": "137927914"
+  },
+  {
+    "region": "현석동",
+    "code8": "11440111",
+    "rter_aptName": "마포경남아너스빌",
+    "bank_aptName": "경남아너스빌",
+    "naverAptNo": 11223,
+    "totalHouseCount": 160,
+    "bank_id": "137961576"
+  },
+  {
+    "region": "현석동",
+    "code8": "11440111",
+    "rter_aptName": "밤섬경남아너스빌",
+    "bank_aptName": "경남아너스빌",
+    "naverAptNo": 11709,
+    "totalHouseCount": 313,
+    "bank_id": "137961576"
+  },
+  {
+    "region": "현석동",
+    "code8": "11440111",
+    "rter_aptName": "성원",
+    "bank_aptName": "성원",
+    "naverAptNo": 842,
+    "totalHouseCount": 260,
+    "bank_id": "137973572"
+  },
+  {
+    "region": "현석동",
+    "code8": "11440111",
+    "rter_aptName": "신촌삼익",
+    "bank_aptName": "신촌삼익",
+    "naverAptNo": 415,
+    "totalHouseCount": 391,
+    "bank_id": "137848654"
+  },
+  {
+    "region": "현석동",
+    "code8": "11440111",
+    "rter_aptName": "신촌숲아이파크",
+    "bank_aptName": "신촌숲아이파크",
+    "naverAptNo": 114335,
+    "totalHouseCount": 1015,
+    "bank_id": "137972787"
   }
 ]

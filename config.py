@@ -1,4 +1,6 @@
 import requests
+import os
+import json
 
 # Common headers matching the prompt
 HEADERS = {
@@ -8,14 +10,36 @@ HEADERS = {
     "X-Requested-With": "XMLHttpRequest",
 }
 
-# Hardcoded Regions for Phase 1
-REGIONS = [
-    {"name": "용강동", "code8": "11440105"},
-    {"name": "토정동", "code8": "11440106"}
-]
+# Mapping of Dong names to their 8-digit codes
+DONG_MAPPING = {
+    "용강동": "11440105",
+    "토정동": "11440106",
+    "현석동": "11440111",
+    "신수동": "11440114",
+    "구수동": "11440112",
+    "대흥동": "11440108",
+    "마포동": "11440104",
+    "상수동": "11440115",
+}
 
 def get_session():
     """Returns a requests Session with predefined headers for cookie maintenance."""
     session = requests.Session()
     session.headers.update(HEADERS)
     return session
+
+# Naver API Credentials - Environment Variables (GitHub) first, then secrets.json (Local)
+NAVER_CLIENT_ID = os.environ.get("NAVER_CLIENT_ID")
+NAVER_CLIENT_SECRET = os.environ.get("NAVER_CLIENT_SECRET")
+
+if not NAVER_CLIENT_ID or not NAVER_CLIENT_SECRET:
+    try:
+        secrets_path = os.path.join(os.path.dirname(__file__), "secrets.json")
+        if os.path.exists(secrets_path):
+            with open(secrets_path, "r", encoding="utf-8") as f:
+                secrets = json.load(f)
+                NAVER_CLIENT_ID = NAVER_CLIENT_ID or secrets.get("NAVER_CLIENT_ID")
+                NAVER_CLIENT_SECRET = NAVER_CLIENT_SECRET or secrets.get("NAVER_CLIENT_SECRET")
+    except Exception as e:
+        print(f"(!) secrets.json 로딩 중 오류 발생: {e}")
+

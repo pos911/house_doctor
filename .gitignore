@@ -5,3 +5,4 @@ debug_*.json
 bank_raw.html
 .vscode/
 .idea/
+secrets.json

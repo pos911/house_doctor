@@ -14,7 +14,10 @@ def process_rter_item(item):
     price1 = parse_price(str(item.get("price1", "0")))
     feature = clean_text(item.get("atclFetrDesc", "")) or clean_text(item.get("feature", ""))
     
-    dong = "".join(filter(str.isdigit, clean_text(str(item.get("dong", "")))))
+    dong_raw = clean_text(str(item.get("dong", "")))
+    if not dong_raw:
+        dong_raw = clean_text(str(item.get("danji", {}).get("danjiDongName", "")))
+    dong = "".join(filter(str.isdigit, dong_raw))
     floor = clean_text(str(item.get("floor", "")))
     total_floor = clean_text(str(item.get("floorTotal", "")))
     
@@ -34,27 +37,27 @@ def process_rter_item(item):
 def scrape_rter_listings(session, naver_apt_no):
     url = "https://rter2.com/hompyArticle/list"
     
-    # User instructions: 100% exact payload structure
     payload = {
         "pageNo": 1,
-        "pageSize": 100,
+        "pageSize": 50,
         "searchMore": {
             "method": "30051A1",
             "type": "30000C01",
             "naverAptNo": str(naver_apt_no),
             "order": "show_start_date,desc"
-        }
+        },
+        "temporary": {"aptNo": str(naver_apt_no)},
+        "northLatitude": "37.5446",
+        "eastLongitude": "126.9525"
     }
     
-    headers = session.headers.copy()
-    headers.update({
+    headers = {
         "Content-Type": "application/json",
-        "X-Ajax-Call": "true",
         "X-Requested-With": "XMLHttpRequest"
-    })
+    }
     
     print(f"[알터 호출 전] Final URL: {url}")
-    print(f"[알터 호출 전] JSON Payload: {json.dumps(payload, ensure_ascii=False)}")
+    print(f"[알터 호출 전] Payload (Dict): {payload}")
     
     listings = []
     try:
@@ -67,6 +70,12 @@ def scrape_rter_listings(session, naver_apt_no):
                 return []
             
             items = data.get("result", {}).get("list", [])
+            
+            # [Task 3] 데이터 유실 방지 로그
+            missing_dong = sum(1 for item in items if not item.get("dong") and not (item.get("danji") and item.get("danji").get("danjiDongName")))
+            missing_floor = sum(1 for item in items if not item.get("floor"))
+            print(f"[알터 데이터 품질] 총 {len(items)}개 중 동 추출불가: {missing_dong}개, 층 부재: {missing_floor}개")
+            
             for item in items:
                 listings.append(process_rter_item(item))
     except Exception as e:
