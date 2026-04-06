@@ -102,10 +102,22 @@ def deduplicate_and_merge(rter_data, bank_data):
         if len(remaining_rter) == 1 and len(remaining_bank) == 1:
             merged = _do_merge(remaining_rter[0], remaining_bank[0])
             merged_results.append(merged)
-        else:
-            # 나머지는 단독 처리
-            standalone_results.extend(remaining_rter)
-            standalone_results.extend(remaining_bank)
+            remaining_rter = []
+            remaining_bank = []
+
+        # ── Step 3.5: Sweep Merge — 단일 위치 추론 + N:M 흡수 ──
+        # 잔여 알터 매물이 있고, 버킷 내 모든 뱅크 매물(이미 병합된 것 포함)의
+        # (dong)이 단 하나로 수렴하면 → 잔여 알터를 그 위치로 강제 흡수
+        if remaining_rter:
+            sweep_result = _try_sweep_merge(remaining_rter, bank_items, merged_results)
+            if sweep_result is not None:
+                # 스윕 성공: collapsed된 단일 행 추가
+                merged_results.append(sweep_result)
+                remaining_rter = []   # 흡수 완료
+
+        # 끝까지 남은 것들은 진짜 단독 처리
+        standalone_results.extend(remaining_rter)
+        standalone_results.extend(remaining_bank)
 
     # ── 단독 매물 태그 처리 ──────────────────────────────
     final = []
@@ -164,6 +176,93 @@ def _do_merge(rter_item: dict, bank_item: dict) -> dict:
         merged["feature"] = bank_item.get("feature", "")
 
     return merged
+
+def _try_sweep_merge(remaining_rter: list, all_bank_items: list, already_merged: list):
+    """
+    Step 3.5: 단일 위치 추론 + N:M 흡수 병합
+    - 버킷 내 뱅크 매물 전체(이미 병합된 것 포함)에서 'dong' 집합을 추출
+    - 단 하나의 dong으로 수렴하면 → 잔여 알터를 강제 흡수하여 1개 행으로 반환
+    - 2개 이상 dong이 섞이면 → None 반환 (흡수 안 함)
+    """
+    # 버킷 내 뱅크 매물 전부의 dong 수집
+    bank_dongs = set()
+    for b in all_bank_items:
+        d = str(b.get("dong", "")).strip()
+        if d:
+            bank_dongs.add(d)
+
+    # 이미 병합된 매물에서도 수집 (뱅크에서 비롯된 dong)
+    for m in already_merged:
+        if "뱅크" in m.get("tags", set()):
+            d = str(m.get("dong", "")).strip()
+            if d and d != "미확인":
+                bank_dongs.add(d)
+
+    # 조건: 뱅크가 단 하나의 dong을 가리킬 때만 흡수
+    if len(bank_dongs) != 1:
+        return None
+
+    inferred_dong = bank_dongs.pop()
+
+    # 대표 뱅크 항목에서 층 정보도 가져옴 (첫 번째 기준)
+    ref_bank = all_bank_items[0] if all_bank_items else {}
+
+    # 잔여 알터 매물들 + 잔여 뱅크가 있다면 포함 (남은 뱅크는 이미 standalone에 들어감)
+    all_to_collapse = remaining_rter  # 알터들만 흡수
+
+    # 대표 항목 베이스: 알터 중 feature가 가장 긴 것
+    base = max(all_to_collapse, key=lambda x: len(str(x.get("feature", ""))))
+    collapsed = base.copy()
+    collapsed["tags"] = {"알터", "뱅크"}
+
+    # 동/층 정보: 뱅크에서 주입
+    collapsed["dong"] = inferred_dong
+    if not collapsed.get("floor"):
+        collapsed["floor"] = ref_bank.get("floor", "")
+    if not collapsed.get("total_floor"):
+        collapsed["total_floor"] = ref_bank.get("total_floor", "")
+    f = collapsed.get("floor", "")
+    tf = collapsed.get("total_floor", "")
+    collapsed["floor_raw"] = f"{f}/{tf}" if tf else f
+
+    # feature 텍스트 통합
+    all_features = [str(x.get("feature", "")) for x in all_to_collapse if x.get("feature")]
+    collapsed["feature"] = _collapse_features(all_features)
+
+    print(f"  [스윕 병합] dong={inferred_dong}, 알터 {len(all_to_collapse)}개 흡수 → 1행")
+    return collapsed
+
+
+def _collapse_features(features: list) -> str:
+    """
+    N개의 feature 텍스트를 1개 행으로 깔끔하게 통합.
+    - 가장 긴 텍스트를 베이스로 삼고
+    - 다른 텍스트에만 있는 고유 키워드(어절 단위)를 이어 붙임
+    - 최대 길이 200자 제한
+    """
+    if not features:
+        return ""
+    if len(features) == 1:
+        return features[0]
+
+    # 가장 긴 것을 베이스로
+    base = max(features, key=len)
+    base_words = set(base.replace(",", " ").replace(".", " ").split())
+
+    extras = []
+    for f in features:
+        if f == base:
+            continue
+        for word in f.replace(",", " ").replace(".", " ").split():
+            if word and word not in base_words and len(word) >= 2:
+                extras.append(word)
+                base_words.add(word)
+
+    result = base
+    if extras:
+        result = base.rstrip(".") + " / " + ",".join(extras[:6])
+
+    return result[:200]
 
 
 def _apply_tags(r: dict):
