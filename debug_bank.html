@@ -1,0 +1,1497 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <link href="https://image.neonet.co.kr/service/neonet/css/neo_design.css" rel="stylesheet" type="text/css" />
+  <link href="https://image.neonet.co.kr/service/neonet/css/neo_font.css" rel="stylesheet" type="text/css" />
+
+  <!-- <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" /> -->
+  <meta http-equiv="Content-Type" content="text/html; charset=euc-kr" />
+</head>
+
+<body>
+
+<script language="javascript">
+
+	// 면적, 가격 정렬기능
+	function sort_list(sort_nm)
+	{
+		// http://neonet.co.kr/novo-rebank/view/offerings/ComplexList.neo?offerings_gbn=AT&region_cd=1150010200&sort_list=sup_area asc
+		var curUrl = parent.location.href;
+		// ?offerings_gbn=AT&region_cd=1150010200&sort_list=sup_area asc
+		var param = curUrl.substr(curUrl.indexOf('?'));
+		var prev_param;
+		param = param.replace("&prc_sort=1","");
+		param = param.replace("&prc_sort=2","");
+
+		// sup_area asc
+		param.indexOf('sort_list') > -1 ? prev_param = param.substr(param.indexOf('sort_list')+1).split('=')[1] : prev_param = param;
+
+		var changeParam = "";
+		if(sort_nm == 'area') {
+			if(param.indexOf('sort_list') > -1) {
+				// {"sup_area asc",""}
+				var prev_param_arr = prev_param.split(',');
+				if(prev_param_arr[0].indexOf('sup_area') > -1) {
+					if(prev_param_arr[0].indexOf('asc') > -1 ) {
+						changeParam = "sup_area desc"+prev_param.replace(prev_param_arr[0],"");
+					}
+					else changeParam = "sup_area asc"+prev_param.replace(prev_param_arr[0],"");;
+				}
+				else changeParam = "sup_area asc,"+prev_param_arr[0];
+			}
+			else changeParam = "&sort_list=sup_area asc";
+		}
+		else if(sort_nm == 'price') {
+			if(param.indexOf('sort_list') > -1) {
+				var prev_param_arr = prev_param.split(',');
+				for(i=0;i<prev_param_arr.length;i++) {
+					if(prev_param_arr[i].indexOf('price') > -1) {
+						if(prev_param_arr[i].indexOf('asc') > -1 ) {
+							i==0 ? changeParam = "price desc":changeParam = prev_param.replace(prev_param_arr[1],"")+"price desc";
+						}
+						else i==0 ? changeParam = "price asc":changeParam = prev_param.replace(prev_param_arr[1],"")+"price asc";
+					}
+					else prev_param_arr[0]=="" ? changeParam = "price asc":changeParam = prev_param+",price asc";
+				}
+			}
+			else changeParam = "&sort_list=price asc";
+		}
+		param !== prev_param ? changeParam = param.replace(prev_param,"")+changeParam : changeParam = param+changeParam;
+		if(changeParam.indexOf('price asc') > -1 || changeParam.indexOf('price desc') > -1) {
+			changeParam.indexOf('price asc') > -1?changeParam = changeParam+'&prc_sort=2':changeParam = changeParam+'&prc_sort=1';
+		}
+		console.log(curUrl.substr(0,curUrl.indexOf('?'))+changeParam);
+		parent.location.href=curUrl.substr(0,curUrl.indexOf('?'))+changeParam;
+	}
+
+	// 컬럼헤더 클릭 시 정렬기능
+	function onClickSort(sort_cd)
+	{
+		var url = 'https://www.neonet.co.kr/novo-rebank/view/offerings/OfferingsList.neo';
+		var param = '?offerings_gbn=AT&region_cd=1144010600';
+
+		if ('P') param += '&offer_gbn=P';
+		if ('A0001062') param += '&complex_cd=A0001062';
+		if ('') param += '&square_cd=';
+		if ('') param += '&addr_seq=';
+		if ('') param += '&list_gbn=';
+		if ('') param += '&agency_cd=';
+
+	  	param += '&sort_cd=' + sort_cd;
+	  	if ('' != sort_cd || !'') param += '&desc=DESC';
+
+		location.href = url + param;
+	}
+
+	// 매물상세
+	function onClickDetail(offerings_gbn, offerings_cd)
+	{
+
+		var gbn = 'AT';
+		if(offerings_gbn == 'VG') gbn = 'VG';
+
+		var url = 'https://www.neonet.co.kr/novo-rebank/view/offerings/OfferingsDetail.neo';
+		var param = '?offerings_cd=' + offerings_gbn + '_' + offerings_cd + '&offerings_gbn=' + gbn + '&offer_gbn=P';
+
+		if ('') param += '&sub_offerings_gbn=';
+
+		if ('1144010600') param += '&region_cd=1144010600';
+		if ('A0001062') param += '&complex_cd=A0001062';
+		if ('') param += '&square_cd=';
+		if ('') param += '&addr_seq=';
+		if ('') param += '&list_gbn=';
+		if ('') param += '&agency_cd=';
+
+		if ('1' && '1' != 1) param += '&page=1';
+
+		parent.location.href = url + param;
+	}
+
+	// 새창으로 매물상세 띄우기
+	function onClickOpenDetail(offerings_gbn, offerings_cd)
+	{
+		var url = 'https://www.neonet.co.kr/novo-rebank/view/offerings/OfferingsDetail.neo';
+		var param = '?offerings_cd=' + offerings_gbn + '_' + offerings_cd + '&offerings_gbn=AT&offer_gbn=P';
+
+		if ('1144010600') param += '&region_cd=1144010600';
+		if ('A0001062') param += '&complex_cd=A0001062';
+		if ('') param += '&square_cd=';
+		if ('') param += '&addr_seq=';
+		if ('') param += '&list_gbn=';
+		if ('') param += '&agency_cd=';
+
+		if ('1' && '1' != 1) param += '&page=1';
+
+		window.open(url + param);
+	}
+
+	function onClickSearchOfferGbn(offerGbn)
+	{
+		var arrayParentUrl = parent.location.href.split('?');
+		var arrayParentLocation = arrayParentUrl[0].split('/');
+
+		var pageUrl = 'https://www.neonet.co.kr/novo-rebank/view/offerings/' + arrayParentLocation[6];
+		var param = '';
+
+		param += '?offerings_gbn=AT';
+		param += '&offer_gbn=' + offerGbn;
+		param += '&region_cd=1144010600';
+
+				  param += '&complex_cd=A0001062';
+		
+		param += '&sub_offerings_gbn=';
+
+		parent.location.href = pageUrl + param;
+	}
+
+	function onClickSubOfferingsGbn()
+	{
+		var arrayParentUrl = parent.location.href.split('?');
+		var arrayParentLocation = arrayParentUrl[0].split('/');
+
+		var pageUrl = 'https://www.neonet.co.kr/novo-rebank/view/offerings/' + arrayParentLocation[6];
+		var param = '';
+
+		param += '?offerings_gbn=AT';
+		param += '&region_cd=1144010600';
+
+		param += '&offer_gbn=P';		param += '&complex_cd=A0001062';
+		var inputSubOfferingsGbn = document.getElementsByName('sub_offerings_gbn');
+
+		if (inputSubOfferingsGbn) {
+			var tempCnt = inputSubOfferingsGbn.length;
+			var tempSubOfferingsGbn = '';
+
+			for (var i = 0; i < tempCnt; i++) {
+				if (inputSubOfferingsGbn[i].checked == true) {
+					if (tempSubOfferingsGbn) tempSubOfferingsGbn += '|';
+
+					tempSubOfferingsGbn += inputSubOfferingsGbn[i].value;
+				}
+			}
+
+			param += '&sub_offerings_gbn=' + tempSubOfferingsGbn;
+		}
+
+		parent.location.href = pageUrl + param;
+	}
+
+	// 프리미엄매물 더보기
+	function onClickPremiumOfferingsList(agencyCd)
+	{
+		var url = 'https://www.neonet.co.kr/novo-rebank/view/offerings/OfferingsList.neo';
+		var param = '?list_gbn=premium&offerings_gbn=AT&offer_gbn=P&region_cd=1144010600';
+
+		param += '&agency_cd=' + agencyCd;
+
+		if ('A0001062') param += '&complex_cd=A0001062';
+		if ('') param += '&square_cd=';
+		if ('') param += '&addr_seq=';
+
+		parent.location.href = url + param;
+	}
+
+	function doChangePremiumList(agencyCd)
+	{
+		if (document.getElementById('div_premium_' + agencyCd)) {
+					}
+	}
+
+	function onClickCloseButton()
+	{
+					document.getElementById('sub_detail_list3').style.display = 'none';
+		
+		document.getElementById('sub_detail_list').style.display = 'none';
+		document.getElementById('sub_detail_button').style.display = 'none';
+		document.getElementById('sub_detail_close').style.display = 'none';
+		document.getElementById('sub_detail_open').style.display = '';
+		document.getElementById('sub_detail_null').style.display = '';
+	}
+
+	function onClickOpenButton()
+	{
+					document.getElementById('sub_detail_list3').style.display = '';
+		
+		document.getElementById('sub_detail_list').style.display = '';
+		document.getElementById('sub_detail_button').style.display = '';
+		document.getElementById('sub_detail_close').style.display = '';
+		document.getElementById('sub_detail_open').style.display = 'none';
+		document.getElementById('sub_detail_null').style.display = 'none';
+	}
+
+	function onFocusPrice()
+	{
+		var price = document.getElementById('price');
+
+		if(price.value != 'Z') {
+			document.getElementById('price_min').value = '';
+			document.getElementById('price_max').value = '';
+		}
+
+		for (var i = 0; i < price.options.length; i++) {
+			if (price.options[i].value == 'Z') {
+				price.options[i].selected = true;
+			}
+		}
+	}
+
+	function onFocusPriceMonth()
+	{
+		var price = document.getElementById('price_month');
+
+		if(price.value != 'Z') {
+			document.getElementById('price_month_min').value = '';
+			document.getElementById('price_month_max').value = '';
+		}
+
+		for (var i = 0; i < price.options.length; i++) {
+			if (price.options[i].value == 'Z') {
+				price.options[i].selected = true;
+			}
+		}
+	}
+
+	function onFocusArea()
+	{
+		var area = document.getElementById('area');
+
+		if(area.value != 'Z') {
+			document.getElementById('area_min').value = '';
+			document.getElementById('area_max').value = '';
+		}
+
+		for (var i = 0; i < area.options.length; i++) {
+			if (area.options[i].value == 'Z') {
+				area.options[i].selected = true;
+			}
+		}
+	}
+
+	function searchOfferings(value)
+	{
+		var arrayParentUrl = parent.location.href.split('?');
+		var arrayParentLocation = arrayParentUrl[0].split('/');
+
+		var pageUrl = 'https://www.neonet.co.kr/novo-rebank/view/offerings/' + arrayParentLocation[6];
+		var param = '';
+
+		param += '?offerings_gbn=AT';
+		param += '&region_cd=1144010600';
+
+		param += '&complex_cd=A0001062';
+		var sub_offer_gbn = document.getElementsByName('sub_offer_gbn');
+		var temp_offer_gbn;
+
+		for (var i = 0; i < sub_offer_gbn.length; i++) {
+			if (sub_offer_gbn[i].checked == true) {
+
+				temp_offer_gbn = sub_offer_gbn[i].value;
+				param += '&offer_gbn='+temp_offer_gbn;
+			}
+		}
+
+		var inputSubOfferingsGbn = document.getElementsByName('sub_offerings_gbn');
+
+		if (inputSubOfferingsGbn) {
+			var tempCnt = inputSubOfferingsGbn.length;
+			var tempSubOfferingsGbn = '';
+
+			for (var i = 0; i < tempCnt; i++) {
+				if (inputSubOfferingsGbn[i].checked == true) {
+					if (tempSubOfferingsGbn) tempSubOfferingsGbn += '|';
+
+					tempSubOfferingsGbn += inputSubOfferingsGbn[i].value;
+				}
+			}
+
+			param += '&sub_offerings_gbn=' + tempSubOfferingsGbn;
+		}
+		
+			if(value == null) {
+				var area = document.getElementById('area').value;
+				if(area != '') param += '&pyung_cd=' + area;
+
+			}else{
+				var area = document.getElementById('area'+value).value;
+				if(area != '') param += '&pyung_cd=' + area;
+
+			}
+
+		
+
+		
+		
+			if(value == null) {
+				var temp_building_no = document.getElementById('building_no').value;
+				if(temp_building_no != '') param += '&building_no=' + temp_building_no.value;
+
+			}else{
+				var temp_building_no = document.getElementById('building_no'+value);
+				if(temp_building_no != '') param += '&building_no=' + temp_building_no.value;
+
+			}
+		
+		parent.location.href = pageUrl + param;
+	}
+
+	function onChangeArea(value)
+	{
+		var area_gbn = document.getElementById('area').value;
+		var area_min;
+		var area_max;
+
+		if(area_gbn == 'A') {
+			area_min = 0;
+			area_max = 66;
+		} else if(area_gbn == 'B') {
+			area_min = 66;
+			area_max = 99;
+		} else if(area_gbn == 'C') {
+			area_min = 99;
+			area_max = 132;
+		} else if(area_gbn == 'D') {
+			area_min = 132;
+			area_max = 165;
+		} else if(area_gbn == 'E') {
+			area_min = 165;
+			area_max = 198;
+		} else if(area_gbn == 'F') {
+			area_min = 198;
+			area_max = 330;
+		} else if(area_gbn == 'G') {
+			area_min = 300;
+			area_max = 991;
+		} else {
+			area_min = '';
+			area_max = '';
+		}
+
+		document.getElementById('area_min').value = area_min;
+		document.getElementById('area_max').value = area_max;
+	}
+
+	
+	function onChangePrice(value)
+	{
+		var sub_offer_gbn = document.getElementsByName('sub_offer_gbn');
+		var price_gbn = document.getElementById('price').value;
+		var temp_offer_gbn;
+		var price_min;
+		var price_max;
+
+		for (var i = 0; i < sub_offer_gbn.length; i++) {
+
+			if (sub_offer_gbn[i].checked == true) {
+
+				temp_offer_gbn = sub_offer_gbn[i].value;
+			}
+		}
+
+		if(temp_offer_gbn == 'L') {
+
+			if(price_gbn == 'A') {
+				price_min = 0;
+				price_max = 5000;
+			} else if(price_gbn == 'B') {
+				price_min = 5000;
+				price_max = 10000;
+			} else if(price_gbn == 'C') {
+				price_min = 10000;
+				price_max = 30000;
+			} else if(price_gbn == 'D') {
+				price_min = 30000;
+				price_max = 60000;
+			} else if(price_gbn == 'E') {
+				price_min = 60000;
+				price_max = '';
+			} else {
+				price_min = '';
+				price_max = '';
+			}
+
+		} else if(temp_offer_gbn == 'M' || temp_offer_gbn == 'S'){
+
+			if(price_gbn == 'A') {
+				price_min = 0;
+				price_max = 1000;
+			} else if(price_gbn == 'B') {
+				price_min = 1000;
+				price_max = 5000;
+			} else if(price_gbn == 'C') {
+				price_min = 5000;
+				price_max = 10000;
+			} else if(price_gbn == 'D') {
+				price_min = 10000;
+				price_max = 30000;
+			} else if(price_gbn == 'E') {
+				price_min = 30000;
+				price_max = '';
+			} else {
+				price_min = '';
+				price_max = '';
+			}
+
+		} else {
+
+			if(price_gbn == 'A') {
+				price_min = 0;
+				price_max = 10000;
+			} else if(price_gbn == 'B') {
+				price_min = 10000;
+				price_max = 30000;
+			} else if(price_gbn == 'C') {
+				price_min = 30000;
+				price_max = 60000;
+			} else if(price_gbn == 'D') {
+				price_min = 60000;
+				price_max = 90000;
+			} else if(price_gbn == 'E') {
+				price_min = 90000;
+				price_max = '';
+			} else {
+				price_min = '';
+				price_max = '';
+			}
+		}
+
+		document.getElementById('price_min').value = price_min;
+		document.getElementById('price_max').value = price_max;
+	}
+
+	function initialization()
+	{
+		
+		
+		document.getElementById('building_no').options[0].selected = true;
+
+		
+		document.getElementById('price').options[0].selected = true;
+		document.getElementById('price_min').value = '';
+		document.getElementById('price_max').value = '';
+
+		document.getElementById('area').options[0].selected = true;
+		document.getElementById('area_min').value = '';
+		document.getElementById('area_max').value = '';
+
+	}
+
+	function num_only()
+	{
+		if((event.keyCode < 48) || (event.keyCode > 57)) {
+			event.returnValue = false;
+		}
+	}
+</script>
+<form>
+<div class='Neonet_container'  style="width:100%;margin:0 auto;"> <div class='mmContents'  style="width:100%;">
+<script language="javascript" src="https://www.neonet.co.kr/novo-rebank/lib/js/offerings/subLayer.js?version=20220622"></script>
+
+<iframe id="ifr_hidden" name="ifr_hidden" style="visibility:hidden;position:absolute;" width="0" height="0" scrolling="no"></iframe>
+<style>
+.md_gbnbox_new {clear:both; /*float:left;*/ width:100%; padding:0; margin:10px 0; }
+.md_gbnbox_new th {margin:0;padding-right:2px;padding-bottom:10px;}
+.md_gbnbox_new td {margin:0;padding-bottom:10px;padding-top:3px;}
+.md_gbnbox_new .mu1 {margin:0; padding-left:25px;}
+.md_gbnbox_new .fl_ri {margin:0; padding:3px 10px 0 0; font-family:dotum;font-size:12px; letter-spacing:0px; color:#666666;}
+</style>
+
+<div class="md_gbnbox_new" style="width: 99%;border: 3px solid #E1E1E1;position:relative;">
+	<table style="width:100%;margin:10px;margin-bottom:3px;" >
+	  <colgroup>
+	  	<col width="55px">
+	  	<col width="245px">
+	  	<col width="60px">
+	  	<col width="270px">
+	  </colgroup>
+	  <tr>
+	  	<th>거래유형</th>
+	    <td colspan="3" >
+	    	<table style="margin:0px;padding:0px;">
+	    		<tr>
+	    			<td style="padding-bottom:0px;padding-top:0px;">
+				    					      		<input type="radio"  id="sub_offer_gbn_ALL"  style="margin-right:3px;"  name="sub_offer_gbn" value=""  onClick="onClickSearchOfferGbn(this.value);">전체
+				      		<input type="radio"  id="sub_offer_gbn_P"  style="margin-right:3px;margin-left:5px;" name="sub_offer_gbn" value="P" checked onClick="onClickSearchOfferGbn(this.value);">매매
+				      		<input type="radio"  id="sub_offer_gbn_L"  style="margin-right:3px;margin-left:5px;" name="sub_offer_gbn" value="L"  onClick="onClickSearchOfferGbn(this.value);">전세
+				      		<br>				      		<input type="radio"  id="sub_offer_gbn_M"  style="margin-right:3px;" name="sub_offer_gbn" value="M"  onClick="onClickSearchOfferGbn(this.value);">월세
+				      						      		<input type="radio"  id="sub_offer_gbn_S"  style="margin-right:3px;margin-left:5px;" name="sub_offer_gbn" value="S"  onClick="onClickSearchOfferGbn(this.value);">단기임대
+				        	    			</td>
+	    		</tr>
+	    	</table>
+	    	    </td>
+		    	    	   </tr>
+	   
+	  
+		  
+	  
+	  	</table>
+	
+</div>
+      
+      <div class="d_stitle" style="margin-top:30px;">추천매물</div>
+
+	<div class="new_offerings_list">
+	  <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <th width="4%">거래</th>
+	      <th width="8%">종류</th>
+	      <th width="6%">확인일</th>
+	      <th width="1%">&nbsp;</th><!-- 이미지 -->
+	      <th width="15%">매물명</th>
+	      <th width="11%">
+	      		      		<select class="input" name="area0" id="area0" onChange="javascript:searchOfferings(0);" style="width: 75px;">
+		    		<option value=''>면적(㎡)</option>
+		    					    				<option value='1'  >80A㎡ </option>
+
+	    						    				<option value='3'  >80B㎡ </option>
+
+	    						    				<option value='6'  >108B㎡ </option>
+
+	    						    				<option value='2'  >108A㎡ </option>
+
+	    					    		    	</select>
+	      </th>
+	      		      <th width="6%">
+		      				      <select class="input" name="building_no0" id="building_no0" onChange="javascript:searchOfferings(0);" style="width: 50px;">
+				  	<option value=''>동</option>
+				  	  				  		<option value="101" >101</option>
+				      				  		<option value="102" >102</option>
+				      				  		<option value="103" >103</option>
+				      				  </select>
+						      </th>
+	      	      <th width="4%">층</th>
+	      <th width="9%">매물가(만원) <label class="lb_sort_price" onclick="sort_list('price')" style="cursor:pointer;">▼</label></th>
+	      <th width="14%">연락처</th>
+        </tr>
+  
+    
+  	
+        
+  
+	    <tr class="bg_white">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.06</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137948844');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137948844');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">103</td>
+	      
+	      <td class="l_top">
+            저/25
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">205,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://7198000.neonet.co.kr" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0915825&offerings_cd=137948844&offerings_gbn=AT');">행운(02-71...</a><br />02-719-8000
+	      </td>
+	    </tr>
+
+	    <tr class="bg_white">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          올수리 한강공원앞 염리초학군 역세권 입주협의
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_gray">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.06</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137972852');">한강삼성</a>
+	        <img src="https://image.neonet.co.kr/service/newbank/images/common/ico_pho.gif" align="absmiddle" />	        <a href="javascript:onClickOpenDetail('AT', '137972852');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">103</td>
+	      
+	      <td class="l_top">
+            14/25
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">225,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://jys5736.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0916207&offerings_cd=137972852&offerings_gbn=AT');">삼성단지내(32...</a><br />02-3273-0004
+	      </td>
+	    </tr>
+
+	    <tr class="bg_gray">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          한강조망우수,밤섬조망,올수리,마포역역세권,입주협의.
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_white">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.06</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137961976');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137961976');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">103</td>
+	      
+	      <td class="l_top">
+            4/25
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">205,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://yutang07.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=62178&offerings_cd=137961976&offerings_gbn=AT');">세원공인중개사사...</a><br />02-715-8448
+	      </td>
+	    </tr>
+
+	    <tr class="bg_white">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          컨디션깔끔.염리초.마포역.한강공원.
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_gray">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.06</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137947579');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137947579');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            80A/60
+	      </td>
+
+	      	        <td class="l_top">101</td>
+	      
+	      <td class="l_top">
+            3/28
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">167,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://jys5736.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0916207&offerings_cd=137947579&offerings_gbn=AT');">삼성단지내(32...</a><br />02-3273-0004
+	      </td>
+	    </tr>
+
+	    <tr class="bg_gray">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          즉시입주가,상태좋음 올수리,계단식,한강인접,마포역역세권.
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_white">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.06</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137953283');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137953283');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">101</td>
+	      
+	      <td class="l_top">
+            4/28
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">203,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://janga85.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0121615&offerings_cd=137953283&offerings_gbn=AT');">부동산마스터공인...</a><br />02-711-5544
+	      </td>
+	    </tr>
+
+	    <tr class="bg_white">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          정남향집 계단식 방3 화2 마포역6분 염리초교
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_gray">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.06</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137947375');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137947375');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">103</td>
+	      
+	      <td class="l_top">
+            4/25
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">205,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://jys5736.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0916207&offerings_cd=137947375&offerings_gbn=AT');">삼성단지내(32...</a><br />02-3273-0004
+	      </td>
+	    </tr>
+
+	    <tr class="bg_gray">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          상태좋음 올수리,한강인접,마포역역세권,염리초,입주협의.
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_white">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	                &nbsp;
+	        	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137989713');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137989713');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">103</td>
+	      
+	      <td class="l_top">
+            4/25
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">205,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://janga85.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0121615&offerings_cd=137989713&offerings_gbn=AT');">부동산마스터공인...</a><br />02-711-5544
+	      </td>
+	    </tr>
+
+	    <tr class="bg_white">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          올수리 주인거주 계단식 방3 화2 마포역6분 염리초교
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_gray">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.04</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137914306');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137914306');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">101</td>
+	      
+	      <td class="l_top">
+            1/28
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">189,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://jys5736.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0916207&offerings_cd=137914306&offerings_gbn=AT');">삼성단지내(32...</a><br />02-3273-0004
+	      </td>
+	    </tr>
+
+	    <tr class="bg_gray">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          상태좋음,남향,마포역역세권,입주협의.
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_white">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.04</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137914389');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137914389');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">101</td>
+	      
+	      <td class="l_top">
+            4/28
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">203,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://jys5736.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0916207&offerings_cd=137914389&offerings_gbn=AT');">삼성단지내(32...</a><br />02-3273-0004
+	      </td>
+	    </tr>
+
+	    <tr class="bg_white">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          남향,한강인접,마포역역세권,입주협의.
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_gray">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.04</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137914320');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137914320');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">101</td>
+	      
+	      <td class="l_top">
+            중/28
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">220,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://jys5736.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0916207&offerings_cd=137914320&offerings_gbn=AT');">삼성단지내(32...</a><br />02-3273-0004
+	      </td>
+	    </tr>
+
+	    <tr class="bg_gray">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          로얄동로얄층,상태좋음,남향,한강조망우수,입주협의.
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_white">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.04</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137913327');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137913327');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            80A/60
+	      </td>
+
+	      	        <td class="l_top">101</td>
+	      
+	      <td class="l_top">
+            17/28
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">185,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://jys5736.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0916207&offerings_cd=137913327&offerings_gbn=AT');">삼성단지내(32...</a><br />02-3273-0004
+	      </td>
+	    </tr>
+
+	    <tr class="bg_white">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          한강조망,특올수리,거실화장,계단식,입주협의.
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_gray">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.04</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137897938');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137897938');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            80A/60
+	      </td>
+
+	      	        <td class="l_top">101</td>
+	      
+	      <td class="l_top">
+            17/28
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">185,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://janga85.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0121615&offerings_cd=137897938&offerings_gbn=AT');">부동산마스터공인...</a><br />02-711-5544
+	      </td>
+	    </tr>
+
+	    <tr class="bg_gray">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          한강뷰 특올수리 계단식 마포역5분 염리초교 학군
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_white">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.03</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137879794');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137879794');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            80A/60
+	      </td>
+
+	      	        <td class="l_top">101</td>
+	      
+	      <td class="l_top">
+            3/28
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">167,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://janga85.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0121615&offerings_cd=137879794&offerings_gbn=AT');">부동산마스터공인...</a><br />02-711-5544
+	      </td>
+	    </tr>
+
+	    <tr class="bg_white">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          올수리 입주협의 계단식 마포역5분 염리초교 학군
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_gray">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.03</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137844309');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137844309');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">101</td>
+	      
+	      <td class="l_top">
+            1/28
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">189,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://janga85.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0121615&offerings_cd=137844309&offerings_gbn=AT');">부동산마스터공인...</a><br />02-711-5544
+	      </td>
+	    </tr>
+
+	    <tr class="bg_gray">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          1층 매매 정남향집 계단식 방3 화2 마포역6분 염리초교
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_white">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.03</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137865810');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137865810');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">103</td>
+	      
+	      <td class="l_top">
+            4/25
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">205,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://02-717-8853.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0902465&offerings_cd=137865810&offerings_gbn=AT');">황금부동산공인중...</a><br />02-717-8853
+	      </td>
+	    </tr>
+
+	    <tr class="bg_white">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          추천,올수리,상태좋음,염리초,학원가,공원가,마포역도보 5분
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_gray">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.04.02</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137833242');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137833242');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">101</td>
+	      
+	      <td class="l_top">
+            중/28
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">220,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://hsh6565.neonet.co.kr" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0906209&offerings_cd=137833242&offerings_gbn=AT');">마포태영(02-...</a><br />02-707-1230
+	      </td>
+	    </tr>
+
+	    <tr class="bg_gray">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          염리초배정, 마포역세권, 한강조망, 4월 입주협의
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_white">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.03.30</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137706114');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137706114');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            80A/60
+	      </td>
+
+	      	        <td class="l_top">102</td>
+	      
+	      <td class="l_top">
+            5/28
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">167,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://jys5736.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0916207&offerings_cd=137706114&offerings_gbn=AT');">삼성단지내(32...</a><br />02-3273-0004
+	      </td>
+	    </tr>
+
+	    <tr class="bg_white">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          한강인접,마포역역세권,계단식,상태기본,입주협의.
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_gray">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	                &nbsp;
+	        	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '137646537');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '137646537');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            80B/60
+	      </td>
+
+	      	        <td class="l_top">101</td>
+	      
+	      <td class="l_top">
+            17/28
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">175,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://leejkok590.neonet.co.kr" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0902145&offerings_cd=137646537&offerings_gbn=AT');">대림(단지내02...</a><br />02-717-0035
+	      </td>
+	    </tr>
+
+	    <tr class="bg_gray">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	           한강변아파트 상태최상 염리초배정 마포역5분 학원가 
+	        	      </td>
+        </tr>
+
+  
+      
+  
+    
+  	
+        
+  
+	    <tr class="bg_white">
+	      <td align="center" class="l_bottom" rowspan="2">매매</td>
+	      <td align="center" class="l_bottom" rowspan="2">아파트</td>
+	      <td align="center" class="l_bottom" rowspan="2">
+	        
+	        	          <p class="confirm_mark">26.03.07</p>
+
+            	      </td>
+
+	      
+	      <td style="text-align:left; padding-left:10px;" class="l_top" colspan="2">
+	        
+	        <a class="link_blue" href="javascript:onClickDetail('AT', '136878665');">한강삼성</a>
+	        	        <a href="javascript:onClickOpenDetail('AT', '136878665');"><img src='https://image.neonet.co.kr/service/neonet/images/common/icon/icon_blank_s.gif' alt='새창' align="absmiddle"></a>
+	      </td>
+	      <td class="l_top">
+            108A/85
+	      </td>
+
+	      	        <td class="l_top">103</td>
+	      
+	      <td class="l_top">
+            1/25
+		</td>
+
+	      <td class="l_top">
+	        <span style="font-weight:bold;" class="">198,000</span>
+	      </td>
+	      <td class="l_bottom" rowspan="2">
+	        <a href="http://jys5736.neonet.co.kr/" target="_blank" onmouseover="InfoBox.Show(event, this, siteintro, 'getAgencyInfo.neo?agency_cd=0916207&offerings_cd=136878665&offerings_gbn=AT');">삼성단지내(32...</a><br />02-3273-0004
+	      </td>
+	    </tr>
+
+	    <tr class="bg_white">
+	      <td class="l_bottom" style="text-align:left; padding-left:10px;" colspan="
+	        	          6
+	        	        ">
+	        	          상태양호,한강인접,마포역역세권,입주협의.
+	        	      </td>
+        </tr>
+
+  	  </table>
+	</div>
+  
+
+  <p style="padding-top:10px;" />
+  <div class='paging'><span class='disabled'> &lt; </span><span class='current'>1</span><span class='disabled'> &gt; </span></div>
+</div>
+</div>
+</form>
+</body>
+<script>
+	if (window.addEventListener) {
+		window.addEventListener('load', function () {
+			if (parent.doPremiumListChange) parent.doPremiumListChange();
+		});
+
+	} else if (window.attachEvent) {
+		window.attachEvent('onload', function () {
+			if (parent.doPremiumListChange) parent.doPremiumListChange();
+		});
+	}
+
+</script>
+</html>
