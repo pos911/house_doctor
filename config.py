@@ -22,11 +22,53 @@ DONG_MAPPING = {
     "상수동": "11440115",
 }
 
+NORMALIZED_DONG_MAPPING = {key.replace(" ", ""): value for key, value in DONG_MAPPING.items()}
+
 def get_session():
     """Returns a requests Session with predefined headers for cookie maintenance."""
     session = requests.Session()
     session.headers.update(HEADERS)
     return session
+
+def resolve_legal_dong_code8(dongri="", legal_address="", road_address=""):
+    """
+    Resolve code8 using the limited in-repo dong mapping.
+    Returns (code8, warnings, matched_name).
+    """
+    warnings = []
+    candidates = []
+
+    if dongri:
+        candidates.append(str(dongri).strip())
+
+    for address in [legal_address, road_address]:
+        if address:
+            candidates.extend(str(address).replace(",", " ").split())
+
+    normalized_candidates = []
+    for item in candidates:
+        cleaned = item.replace(" ", "").strip()
+        if cleaned:
+            normalized_candidates.append(cleaned)
+
+    seen = set()
+    deduped = []
+    for candidate in normalized_candidates:
+        if candidate not in seen:
+            seen.add(candidate)
+            deduped.append(candidate)
+
+    for candidate in deduped:
+        if candidate in NORMALIZED_DONG_MAPPING:
+            return NORMALIZED_DONG_MAPPING[candidate], warnings, candidate
+
+    for candidate in deduped:
+        for mapped_name, code8 in NORMALIZED_DONG_MAPPING.items():
+            if mapped_name in candidate:
+                return code8, warnings, mapped_name
+
+    warnings.append("legal_dong_code8_missing")
+    return None, warnings, None
 
 # Naver API Credentials - Environment Variables (GitHub) first, then secrets.json (Local)
 NAVER_CLIENT_ID = os.environ.get("NAVER_CLIENT_ID")
@@ -42,4 +84,3 @@ if not NAVER_CLIENT_ID or not NAVER_CLIENT_SECRET:
                 NAVER_CLIENT_SECRET = NAVER_CLIENT_SECRET or secrets.get("NAVER_CLIENT_SECRET")
     except Exception as e:
         print(f"(!) secrets.json 로딩 중 오류 발생: {e}")
-

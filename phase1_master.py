@@ -4,26 +4,65 @@ from bs4 import BeautifulSoup
 from config import DONG_MAPPING, get_session
 from utils import is_match_name
 
-def fetch_rter_danji(session, code8):
+def fetch_rter_danji_debug(session, code8):
     url = f"https://rter2.com/search/danjiList?legalDongCode={code8}"
-    # Send empty payload just in case it requires a POST body format
+    debug = {
+        "request": {
+            "url": url,
+            "method": "POST",
+            "params": {"legalDongCode": str(code8)},
+        },
+        "status_code": None,
+        "raw_count": 0,
+        "items": [],
+        "error": None,
+    }
+
     try:
         resp = session.post(url, json={})
+        debug["status_code"] = resp.status_code
         if resp.status_code == 200:
             data = resp.json()
-            return data.get("result", {}).get("list", [])
+            items = data.get("result", {}).get("list", [])
+            debug["items"] = items
+            debug["raw_count"] = len(items)
     except Exception as e:
-        print(f"Error fetching Rter for {code8}: {e}")
-    return []
+        debug["error"] = str(e)
 
-def fetch_bank_danji(session, code8):
+    return debug
+
+def fetch_rter_danji(session, code8):
+    debug = fetch_rter_danji_debug(session, code8)
+    if debug.get("error"):
+        print(f"Error fetching Rter for {code8}: {debug['error']}")
+    return debug.get("items", [])
+
+def fetch_bank_danji_debug(session, code8):
     url = f"https://www.neonet.co.kr/novo-rebank/view/offerings/inc_OfferingsList.neo?offerings_gbn=AT&offer_gbn=P&region_cd={code8}00"
+    debug = {
+        "request": {
+            "url": url,
+            "method": "GET",
+            "params": {
+                "offerings_gbn": "AT",
+                "offer_gbn": "P",
+                "region_cd": f"{code8}00",
+            },
+        },
+        "status_code": None,
+        "raw_count": 0,
+        "items": [],
+        "raw_html": "",
+        "error": None,
+    }
+
     try:
         resp = session.get(url)
-        # Decode using 'replace' per requirement to minimize hangul loss
+        debug["status_code"] = resp.status_code
         html = resp.content.decode('euc-kr', errors='replace')
+        debug["raw_html"] = html
         soup = BeautifulSoup(html, 'html.parser')
-        
+
         bank_danjis = []
         target_links = soup.find_all('a', class_='link_blue')
         for link in target_links:
@@ -36,10 +75,19 @@ def fetch_bank_danji(session, code8):
                     "aptName": apt_name,
                     "bank_id": bank_id
                 })
-        return bank_danjis
+
+        debug["items"] = bank_danjis
+        debug["raw_count"] = len(bank_danjis)
     except Exception as e:
-        print(f"Error fetching Bank for {code8}: {e}")
-    return []
+        debug["error"] = str(e)
+
+    return debug
+
+def fetch_bank_danji(session, code8):
+    debug = fetch_bank_danji_debug(session, code8)
+    if debug.get("error"):
+        print(f"Error fetching Bank for {code8}: {debug['error']}")
+    return debug.get("items", [])
 
 def update_master_table(regions=None):
     session = get_session()

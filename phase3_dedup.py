@@ -31,6 +31,12 @@ def deduplicate_and_merge(rter_data, bank_data):
     Step 1: (space_int, price) Key로 버킷 생성
     Step 2: 버킷 내 알터-뱅크 간 feature 텍스트 유사도로 1:1 병합
     Step 3: 버킷에 알터 1개 + 뱅크 1개만 남으면 강제 병합
+
+    TODO:
+    - 가격 범위 정규화 필요
+    - 저/중/고 층 표현을 floor_min/floor_max 범위로 변환 필요
+    - 동일매물 확정/추정/후보/별도 분류 필요
+    - raw source records를 보존한 listing_group 구조 필요
     """
 
     # ── 플랫폼 태깅 & 기본 필드 정규화 ──────────────────

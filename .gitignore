@@ -5,4 +5,13 @@ debug_*.json
 bank_raw.html
 .vscode/
 .idea/
+.DS_Store
+.pycache_tmp/
 secrets.json
+.env
+*.env
+outputs/
+raw/
+*_raw.json
+*_raw.html
+*_call_debug.json
